@@ -16,3 +16,18 @@ When a user runs 'vagrant up', the following actions occur:
 4. ansible playbook installs necessary software using apt-get
 5. ansible sets up Ruby1.9.3 using rbenv. 
    Change ruby_version in playbook.xml to support different ruby version
+
+
+How to create a new rails (or Ruby) project
+1. git clone https://github.com/hiro4848/vagrant-rails-template.git
+2. change the project name
+3. modify ansible/playbook.xml if necessary (e.g. change ruby version)
+3. vagrant up
+4. /vagrant is the directory synced with the project directory
+5. run 'gem install bundler', then 'bundle install'
+
+
+
+
+
+
