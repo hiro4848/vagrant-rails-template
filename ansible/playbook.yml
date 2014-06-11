@@ -1,0 +1,80 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  vars:
+    - rbenv_root: /home/vagrant/.rbenv
+    - ruby_version: 1.9.3-p547
+    - bashrc_dir: /home/vagrant/.bashrc.d
+    - usr_bin_dir: /home/vagrant/bin
+  tasks:
+    - name: rbenv | install build depends
+      sudo: true
+      apt: pkg={{ item }} state=latest install_recommends=no
+      with_items:
+      - build-essential
+      - git
+      - libcurl4-openssl-dev
+      - libmysqlclient-dev
+      - libssl-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - zlib1g-dev
+      - ruby1.9.1-dev
+      - libpq-dev
+      - libsqlite3-dev 
+      - sqlite3      
+
+
+    - name: rbenv | update rbenv repo
+      git: repo=git://github.com/sstephenson/rbenv.git dest={{ rbenv_root }}
+
+    - name: rbenv | create usr bin dir
+      file: dest={{ usr_bin_dir }} state=directory
+
+    - name: rbenv | add rbenv to path
+      file: path={{ usr_bin_dir }}/rbenv src={{ rbenv_root }}/bin/rbenv state=link
+
+    - name: rbenv | copy bashrc 
+      template: src=rbenv.sh.j2 dest=/etc/profile.d/rbenv.sh mode=0644
+      sudo: true
+
+
+    - name: rbenv | check ruby-build installed
+      command: test -x {{ rbenv_root}}/plugins/ruby-build
+      register: rbuild_present
+      ignore_errors: yes
+
+    - name: rbenv | clone ruby-build repo
+      git: repo=git://github.com/sstephenson/ruby-build.git dest={{ rbenv_root }}/plugins/ruby-build
+      when: rbuild_present|failed
+
+    - name: rbenv | install ruby-build
+      command: ./install.sh chdir={{ rbenv_root }}/plugins/ruby-build
+      environment:
+        PREFIX: "{{ usr_bin_dir }}"
+      when: rbuild_present|failed
+
+    - name: rbenv | check ruby {{ ruby_version }} installed
+      shell: RBENV_ROOT={{ rbenv_root }} rbenv versions | grep {{ ruby_version }}
+      register: ruby_installed
+      environment:
+        PATH: "{{ usr_bin_dir }}:{{ ansible_env.PATH }}"
+      ignore_errors: yes
+
+    - name: rbenv | install ruby {{ ruby_version }}
+      shell: RBENV_ROOT={{ rbenv_root }} rbenv install {{ ruby_version }}
+      environment:
+        PATH: "{{ usr_bin_dir }}:{{ ansible_env.PATH }}"
+      when: ruby_installed|failed
+
+    - name: rbenv | set global ruby {{ ruby_version }}
+      shell: RBENV_ROOT={{ rbenv_root }} rbenv global {{ ruby_version }}
+      environment:
+        PATH: "{{ usr_bin_dir }}:{{ ansible_env.PATH }}"
+      when: ruby_installed|failed
+
+    - name: rbenv | rehash
+      shell: RBENV_ROOT={{ rbenv_root }} rbenv rehash
+      environment:
+        PATH: "{{ usr_bin_dir }}:{{ ansible_env.PATH }}"
+      when: ruby_installed|failed
