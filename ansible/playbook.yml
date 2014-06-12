@@ -4,6 +4,7 @@
   vars:
     - rbenv_root: /home/vagrant/.rbenv
     - ruby_version: 1.9.3-p547
+    - rails_version: 3.2.18
     - bashrc_dir: /home/vagrant/.bashrc.d
     - usr_bin_dir: /home/vagrant/bin
   tasks:
@@ -22,7 +23,8 @@
       - ruby1.9.1-dev
       - libpq-dev
       - libsqlite3-dev 
-      - sqlite3      
+      - sqlite3     
+      - nodejs
 
 
     - name: rbenv | update rbenv repo
@@ -78,3 +80,21 @@
       environment:
         PATH: "{{ usr_bin_dir }}:{{ ansible_env.PATH }}"
       when: ruby_installed|failed
+
+
+    - name: rails | install bundler
+      command: bash -lc "gem install bundler"
+
+    - name: rails | install rails
+      shell: bash -lc "gem install rails -v {{ rails_version }}"
+
+    - name: rails | check if a rails project already exists
+      local_action: stat path=/vagrant/app
+      register: rails_app_exists
+
+    - name: rails | create new rails project
+      command: bash -lc "rails new ." chdir=/vagrant
+      when: rails_app_exists.stat.exists == False
+
+    - name: rails | bundle install
+      command: bash -lc "bundle install" chdir=/vagrant

@@ -19,13 +19,21 @@ When a user runs 'vagrant up', the following actions occur:
 
 
 How to create a new rails (or Ruby) project
-1. git clone https://github.com/hiro4848/vagrant-rails-template.git
-2. change the project name
-3. modify ansible/playbook.xml if necessary (e.g. change ruby version)
-3. vagrant up
-4. /vagrant is the directory synced with the project directory
-5. run 'gem install bundler', then 'bundle install'
+1. move to 'RubymineProjects' directory
+2. git clone https://github.com/hiro4848/vagrant-rails-template.git project_name
 
+3. modify Vagrantfile
+  - change the IP address in config.vm.network
+4. modify ansible/playbook.xml if necessary (e.g. change ruby version)
+5. vagrant up
+6. /vagrant is the directory synced with the project directory
+7. Open the project directory in Rubymine
+8. File -> Settings -> Ruby SDK and Gems
+   - add remote ruby sdk by choosing 'new remote'
+   - Fill from vagrant config
+   - Change to Ruby interpreter path to the rbenv based ruby interpreter
+   - Note this can't be a symlink. The specific Ruby must be chosen or gems wouldn't be properly recognized:
+     e.g. /home/vagrant/.rbenv/versions/1.9.3-p547/bin/ruby
 
 
 
