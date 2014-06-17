@@ -25,7 +25,7 @@
       - libsqlite3-dev 
       - sqlite3     
       - nodejs
-
+      - postgresql-9.3
 
     - name: rbenv | update rbenv repo
       git: repo=git://github.com/sstephenson/rbenv.git dest={{ rbenv_root }}
